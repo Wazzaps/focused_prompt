@@ -33,13 +33,7 @@ fn main() {
 #[cfg(target_os = "linux")]
 fn install_prompt() {
     let stderr = &mut stderr();
-    let shell = match env_var(b"SHELL") {
-        None => {
-            let _ = write_bytes!(stderr, b"SHELL environment variable not set");
-            return;
-        }
-        Some(s) => s,
-    };
+    let shell = env_var(b"SHELL").expect2(b"SHELL environment variable not set");
 
     let shell_name = shell
         .rsplit_once_str(b"/")
@@ -57,13 +51,13 @@ fn install_prompt() {
 
             // Install globally if root
             if is_root {
-                let _ = write_bytes!(stderr, b"User is root, installing globally");
+                let _ = write_bytes!(stderr, b"User is root, installing globally\n");
 
                 let sudo_user = env_var_or_empty(b"SUDO_USER");
                 if sudo_user.is_empty() {
                     let _ = write_bytes!(
                         stderr,
-                        b"SUDO_USER environment variable not set, not setting a main user"
+                        b"SUDO_USER environment variable not set, not setting a main user\n"
                     );
                     return;
                 } else {
@@ -77,7 +71,7 @@ fn install_prompt() {
             } else {
                 let _ = write_bytes!(
                     stderr,
-                    b"User is not root, installing for current user only"
+                    b"User is not root, installing for current user only\n"
                 );
 
                 let home = env_var(b"HOME").expect2(b"HOME environment variable not set");
@@ -144,7 +138,7 @@ fn install_prompt() {
     let _ = write_bytes!(
         stderr,
         b"Automatic install not supported on macOS, \
-          see https://github.com/Wazzaps/focused_prompt#installation for more info"
+          see https://github.com/Wazzaps/focused_prompt#installation for more info\n"
     );
 }
 
@@ -153,7 +147,7 @@ fn install_prompt() {
     let _ = write_bytes!(
         stderr,
         b"Automatic install not supported on Windows, \
-          see https://github.com/Wazzaps/focused_prompt#installation for more info"
+          see https://github.com/Wazzaps/focused_prompt#installation for more info\n"
     );
 }
 
@@ -162,7 +156,7 @@ fn install_prompt() {
     let _ = write_bytes!(
         stderr,
         b"Automatic install not supported on this platform, \
-          see https://github.com/Wazzaps/focused_prompt#installation for more info"
+          see https://github.com/Wazzaps/focused_prompt#installation for more info\n"
     );
 }
 
