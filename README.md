@@ -47,7 +47,7 @@ Also, the hostname is displayed, so you know where you are.
 1. Install a powerline font
    - on Debian/Ubuntu you can do this with `sudo apt install fonts-powerline`
 2. Download the latest release
-   - `wget https://github.com/Wazzaps/focused-prompt/releases/latest/download/focused_prompt-$(uname -m)-linux`
+   - `wget https://github.com/Wazzaps/focused_prompt/releases/latest/download/focused_prompt-$(uname -m)-linux`
 3. Move the file to `/usr/local/bin/`:
    - `sudo mv focused_prompt-$(uname -m)-linux /usr/local/bin/focused_prompt`
    - `sudo chmod +x /usr/local/bin/focused_prompt`
@@ -61,7 +61,7 @@ Also, the hostname is displayed, so you know where you are.
 1. Install a powerline font
    - on Debian/Ubuntu you can do this with `sudo apt install fonts-powerline`
 2. Download the latest release
-   - `wget https://github.com/Wazzaps/focused-prompt/releases/latest/download/focused_prompt-(uname -m)-linux`
+   - `wget https://github.com/Wazzaps/focused_prompt/releases/latest/download/focused_prompt-(uname -m)-linux`
 3. Run the installer
    - `chmod +x focused_prompt-* && sudo SHELL=fish ./focused_prompt-* install`
 4. Press enter a couple of times
