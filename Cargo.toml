@@ -1,0 +1,18 @@
+[package]
+name = "focused_prompt"
+version = "1.0.0"
+edition = "2021"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+atoi = "2.0.0"
+format-bytes = "0.3.0"
+bstr = "1.4.0"
+libc = "0.2.141"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true

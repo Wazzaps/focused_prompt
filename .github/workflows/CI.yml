@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  linux:
+    name: Build linux binaries
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container: registry.hub.docker.com/library/debian:bookworm-slim
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install nightly rust
+        run: |
+          apt update
+          apt install --no-install-recommends curl clang lld
+          curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain nightly-2023-02-22 --profile minimal -y
+          rustup target add x86_64-unknown-linux-musl
+          rustup target add i686-unknown-linux-musl
+          rustup target add aarch64-unknown-linux-musl
+      - name: Build
+        run: |
+          source $HOME/.cargo/env
+          mkdir dist
+          for ARCH in x86_64 i686 aarch64; do
+            cargo build --release --target $ARCH-unknown-linux-musl
+            cp target/$ARCH-unknown-linux-musl/release/focused_prompt dist/focused_prompt-$ARCH-linux
+          done
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: bin
+          path: dist
