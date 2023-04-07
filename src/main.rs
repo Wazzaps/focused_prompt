@@ -1,6 +1,6 @@
 #![feature(byte_slice_trim_ascii)]
 
-use crate::utils::{env_var, env_var_or_empty};
+use crate::utils::{env_var, env_var_or_empty, SmallExpect};
 use bstr::ByteSlice;
 use format_bytes::{format_bytes, write_bytes};
 use prompt::display_prompt;
@@ -80,7 +80,7 @@ fn install_prompt() {
                     b"User is not root, installing for current user only"
                 );
 
-                let home = env_var(b"HOME").expect("HOME environment variable not set");
+                let home = env_var(b"HOME").expect2(b"HOME environment variable not set");
                 main_user =
                     env_var(b"USER").and_then(|u| if u.is_empty() { None } else { Some(u) });
                 bin_dir = format_bytes!(b"{}/.local/bin", &home);
@@ -92,37 +92,41 @@ fn install_prompt() {
             // Copy the binary to /usr/local/bin / ~/.local/bin
             if std::path::PathBuf::from(OsStr::from_bytes(b"/proc/self/exe"))
                 .read_link()
-                .unwrap()
+                .expect2(b"Failed to read /proc/self/exe")
                 .as_os_str()
                 .as_bytes()
                 == bin_path
             {
                 let _ = write_bytes!(stderr, b"Already running from {}, skipping...\n", bin_path);
             } else {
-                std::fs::create_dir_all(OsStr::from_bytes(&bin_dir)).unwrap();
+                std::fs::create_dir_all(OsStr::from_bytes(&bin_dir))
+                    .expect2(b"Failed to create bin dir");
                 std::fs::copy(
                     OsStr::from_bytes(b"/proc/self/exe"),
                     OsStr::from_bytes(&bin_path),
                 )
-                .unwrap();
+                .expect2(b"Failed to copy binary to /usr/local/bin");
             }
 
             // Create the fish_prompt function
-            std::fs::create_dir_all(OsStr::from_bytes(&fish_func_dir)).unwrap();
+            std::fs::create_dir_all(OsStr::from_bytes(&fish_func_dir))
+                .expect2(b"Failed to create fish functions dir");
             let function_file = std::fs::OpenOptions::new()
                 .create(true)
                 .write(true)
                 .truncate(true)
                 .open(OsStr::from_bytes(&fish_func_path))
-                .unwrap();
+                .expect2(b"Failed to open fish_prompt function file");
             let mut function_file = std::io::BufWriter::new(function_file);
             function_file
                 .write_all(b"function fish_prompt\n\x20\x20\x20\x20FP_STATUS=$status ")
-                .unwrap();
+                .expect2(b"Failed to write to fish_prompt function file");
             if let Some(main_user) = main_user {
-                write_bytes!(&mut function_file, b"FP_MAIN_USER={} ", &main_user).unwrap();
+                write_bytes!(&mut function_file, b"FP_MAIN_USER={} ", &main_user)
+                    .expect2(b"Failed to write to fish_prompt function file");
             }
-            write_bytes!(&mut function_file, b"FP_COLS=$COLUMNS {}\nend\n", &bin_path).unwrap();
+            write_bytes!(&mut function_file, b"FP_COLS=$COLUMNS {}\nend\n", &bin_path)
+                .expect2(b"Failed to write to fish_prompt function file");
         }
         _ => {
             let _ = write_bytes!(

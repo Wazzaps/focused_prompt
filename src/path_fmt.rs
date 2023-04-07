@@ -1,4 +1,5 @@
 use crate::utils::env_var;
+use crate::SmallExpect;
 use bstr::ByteVec;
 use format_bytes::format_bytes;
 use std::cmp::max;
@@ -93,7 +94,7 @@ fn shorten_words(input_path: Vec<u8>, target_len: usize) -> Vec<u8> {
             .max_by_key(|(i, _)| {
                 path_cand[*i].left_to_remove / path_cand[*i].importance_factor as i64
             })
-            .unwrap()
+            .expect2(b"Internal error: path is empty")
             .0;
         if path_cand[ind].left_to_remove == 0 {
             break;

@@ -13,6 +13,7 @@ bstr = "1.4.0"
 libc = "0.2.141"
 
 [profile.release]
-opt-level = 3
+opt-level = 'z'
 lto = true
+panic = 'abort'
 strip = true

@@ -1,12 +1,15 @@
-use crate::path_fmt;
 use crate::utils::{env_var, env_var_or_empty};
+use crate::{path_fmt, SmallExpect};
 use format_bytes::write_bytes;
 use std::io::Write;
 use std::process::Command;
 
 fn add_hostname(into: &mut Vec<u8>, is_connected_via_ssh: bool) {
     if is_connected_via_ssh {
-        let hostname = Command::new("hostname").output().unwrap().stdout;
+        let hostname = Command::new("hostname")
+            .output()
+            .map(|out| out.stdout)
+            .unwrap_or(b"unknown".to_vec());
         into.push(b'@');
         into.extend_from_slice(hostname.trim_ascii());
     }
@@ -14,10 +17,10 @@ fn add_hostname(into: &mut Vec<u8>, is_connected_via_ssh: bool) {
 
 pub fn display_prompt() {
     let status_code = env_var(b"FP_STATUS")
-        .map(|v| atoi::atoi(&v).expect("FP_STATUS is not a number"))
+        .map(|v| atoi::atoi(&v).expect2(b"FP_STATUS is not a number"))
         .unwrap_or(0); // Assume success if status code is not provided
     let cols = env_var(b"FP_COLS")
-        .map(|v| atoi::atoi(&v).expect("FP_COLS is not a number"))
+        .map(|v| atoi::atoi(&v).expect2(b"FP_COLS is not a number"))
         .unwrap_or(80); // Assume 80 cols if not specified
 
     // TODO: Display jobs
@@ -85,7 +88,7 @@ pub fn display_prompt() {
             prompt.push(b'%');
         } else {
             prompt.extend_from_slice(FAILURE_TEXT_COLOR);
-            write_bytes!(&mut prompt, b"{}", status_code).unwrap();
+            let _ = write_bytes!(&mut prompt, b"{}", status_code);
         }
     } else {
         // -- Fancy prompt, uses powerline font --
@@ -99,7 +102,7 @@ pub fn display_prompt() {
         } else {
             prompt.extend_from_slice(FAILURE_BG_COLOR);
             prompt.extend_from_slice(ARROW);
-            write_bytes!(&mut prompt, b"{}", status_code).unwrap();
+            let _ = write_bytes!(&mut prompt, b"{}", status_code);
             prompt.extend_from_slice(RESET_ALL_COLORS);
             prompt.extend_from_slice(BOLD_TEXT);
             prompt.extend_from_slice(FAILURE_TEXT_COLOR);
